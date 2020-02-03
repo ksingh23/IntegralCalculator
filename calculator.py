@@ -83,7 +83,7 @@ def get_step_size(function, left_bound, right_bound, error):
 
 
 if __name__ == '__main__':
-    formula = "ln(x)"
+    formula = "cos(x)"
     x = sp.symbols('x')
     sp.init_printing(use_unicode=True)
     func = eq.Expression(formula, ["x"])
@@ -94,14 +94,6 @@ if __name__ == '__main__':
     num_steps = get_step_size(function, left_bound, right_bound, 0.0001)
     print(integral_with_simpsons_rule(function, left_bound, right_bound, num_steps))
     print(time.time() - start)
-    # start = time.time()
-    # print(integral_with_riemann_sum(function, left_bound, right_bound))
-    # print(time.time() - start)
-    '''
-    
-    integral_with_riemann_sum(func, left_bound, right_bound)
-    
-    integral_with_simpsons_rule(lam_f, left_bound, right_bound, deriv)
     figure, axis = plt.subplots()
     x = np.linspace(-np.pi, np.pi, 201)
     axis.plot(x, func(x), 'r')
@@ -113,4 +105,4 @@ if __name__ == '__main__':
     axis.add_patch(area_under_curve)
     plt.show()
 
-    '''
+
