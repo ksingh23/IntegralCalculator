@@ -1,14 +1,12 @@
-from math import cos
 import Equation as eq
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.patches import Polygon
+from matplotlib.widgets import AxesWidget
 import sympy as sp
 from sympy.parsing.sympy_parser import parse_expr
-from sympy.utilities.lambdify import implemented_function, lambdify
 import time
-from scipy.optimize import fsolve
 import math
 
 
@@ -82,6 +80,47 @@ def get_step_size(function, left_bound, right_bound, error):
     return num_steps
 
 
+class DragAxes:
+    def __init__(self, line):
+        self.line = line
+        print(self.line.axes)
+        self.x = list(line.get_xdata())
+        self.y = list(line.get_ydata())
+        # Above instance variables will give us the range of x and y that the lines cover
+        self.press = None
+
+    def connect(self):
+        self.cidpress = self.line.figure.canvas.mpl_connect('button_press_event', self.on_press)
+        self.cidmotion = self.line.figure.canvas.mpl_connect('motion_notify_event', self.on_motion)
+        self.cidrelease = self.line.figure.canvas.mpl_connect('button_release_event', self.on_release)
+
+    def on_press(self, event):
+        if event.inaxes != self.line.axes:
+            return
+        contains, attrd = self.line.contains(event)
+        if not contains:
+            return
+        print('event contains', self.x, self.y)
+        x0, y0 = self.x, self.y
+        self.press = x0, y0, event.xdata, event.ydata
+
+    def on_motion(self, event):
+        if not self.press:
+            return
+        if event.inaxes != self.line.axes:
+            return
+        x0, y0, xpress, ypress = self.press
+        dx = event.xdata - xpress
+        new_x = x0 + dx
+        self.line.set_xdata([new_x])
+        self.x = new_x
+        self.line.figure.canvas.draw()
+
+    def on_release(self, event):
+        self.press = None
+        self.line.figure.canvas.draw()
+
+
 if __name__ == '__main__':
     formula = "cos(x)"
     x = sp.symbols('x')
@@ -103,6 +142,11 @@ if __name__ == '__main__':
     verts = [(left_bound, 0), *zip(bounds, integral_region), (right_bound, 0)]
     area_under_curve = Polygon(verts, facecolor='0.9', edgecolor='0.2', linewidth=0)
     axis.add_patch(area_under_curve)
+    lb = axis.axvline(x=left_bound)
+    left = DragAxes(lb)
+    left.connect()
+    rb = axis.axvline(x=right_bound)
+    right = DragAxes(rb)
+    right.connect()
     plt.show()
-
 
